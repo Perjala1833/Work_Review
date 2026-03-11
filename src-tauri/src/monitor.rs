@@ -23,7 +23,13 @@ pub fn get_active_window() -> Result<ActiveWindow> {
     unsafe {
         let hwnd = GetForegroundWindow();
         if hwnd.is_null() {
-            return Err(AppError::Screenshot("无法获取前台窗口".to_string()));
+            // Win10 上切换窗口/UAC弹窗时可能返回 null，不应直接报错
+            // 降级返回 Desktop，确保不丢失轮询周期的时长
+            return Ok(ActiveWindow {
+                app_name: "Desktop".to_string(),
+                window_title: String::new(),
+                browser_url: None,
+            });
         }
 
         // 获取窗口标题

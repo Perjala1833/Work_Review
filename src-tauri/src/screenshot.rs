@@ -190,10 +190,11 @@ impl ScreenshotService {
         let primary_monitor = Monitor::primary()
             .map_err(|e| AppError::Screenshot(format!("获取主显示器失败: {e}")))?;
 
-        // 配置捕获设置
+        // 先尝试 WithoutBorder（Win11 及部分新版 Win10 支持）
+        // 失败后自动降级到 WithBorder（兼容所有 Win10 版本）
         let flags = (result.clone(), captured.clone(), temp_png.clone());
         let settings = Settings::new(
-            primary_monitor,
+            primary_monitor.clone(),
             CursorCaptureSettings::WithCursor,
             DrawBorderSettings::WithoutBorder,
             SecondaryWindowSettings::Default,
@@ -203,14 +204,50 @@ impl ScreenshotService {
             flags,
         );
 
-        // 在单独的线程中运行捕获
         let capture_handle = std::thread::spawn(move || SingleFrameCapture::start(settings));
 
-        // 等待完成（最多5秒）
-        match capture_handle.join() {
-            Ok(Ok(())) => {}
-            Ok(Err(e)) => return Err(AppError::Screenshot(format!("捕获失败: {e}"))),
-            Err(_) => return Err(AppError::Screenshot("捕获线程异常".to_string())),
+        let first_attempt = match capture_handle.join() {
+            Ok(Ok(())) => Ok(()),
+            Ok(Err(e)) => Err(format!("{e}")),
+            Err(_) => Err("捕获线程异常".to_string()),
+        };
+
+        // 首次尝试失败时，降级到 WithBorder 兼容模式
+        if let Err(ref first_err) = first_attempt {
+            log::warn!("截屏首次尝试失败（可能是 Win10 不支持 WithoutBorder）: {first_err}，降级为 WithBorder 模式");
+
+            // 重置共享状态
+            {
+                let mut r = result.lock().map_err(|_| AppError::Screenshot("锁错误".to_string()))?;
+                r.success = false;
+                r.error = None;
+                r.width = 0;
+                r.height = 0;
+            }
+            captured.store(false, std::sync::atomic::Ordering::SeqCst);
+
+            let flags2 = (result.clone(), captured.clone(), temp_png.clone());
+            let primary_monitor2 = Monitor::primary()
+                .map_err(|e| AppError::Screenshot(format!("获取主显示器失败: {e}")))?;
+
+            let settings2 = Settings::new(
+                primary_monitor2,
+                CursorCaptureSettings::WithCursor,
+                DrawBorderSettings::WithBorder,
+                SecondaryWindowSettings::Default,
+                MinimumUpdateIntervalSettings::Default,
+                DirtyRegionSettings::Default,
+                ColorFormat::Bgra8,
+                flags2,
+            );
+
+            let capture_handle2 = std::thread::spawn(move || SingleFrameCapture::start(settings2));
+
+            match capture_handle2.join() {
+                Ok(Ok(())) => {}
+                Ok(Err(e)) => return Err(AppError::Screenshot(format!("捕获失败(降级模式): {e}"))),
+                Err(_) => return Err(AppError::Screenshot("捕获线程异常(降级模式)".to_string())),
+            }
         }
 
         // 检查结果

